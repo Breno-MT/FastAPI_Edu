@@ -1,0 +1,4 @@
+[tool.taskipy.tasks]
+run = 'fastapi dev fast_zero/app.py'
+test = 'pytest --cov=fast_zero -vv'
+post_test = 'coverage html'
