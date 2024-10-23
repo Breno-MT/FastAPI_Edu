@@ -17,3 +17,16 @@ def test_create_new_user_and_check_the_info(client):
         "username": "testdasilva",
         "email": "testdasilva@gmail.com"
     }
+
+def test_get_users_from_database(client):
+    response = client.get("/users/")
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        "users": [
+            {
+                "id": 1,
+                "username": "testdasilva",
+                "email": "testdasilva@gmail.com"
+            }
+        ]
+    }
