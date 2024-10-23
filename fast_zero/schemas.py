@@ -15,3 +15,6 @@ class UserPublic(BaseModel):
     id: int
     username: str
     email: EmailStr
+
+class UserList(BaseModel):
+    users: list[UserPublic]
