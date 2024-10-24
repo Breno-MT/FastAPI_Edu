@@ -28,7 +28,7 @@ def create_user(user: UserSchema):
 def get_users():
     return {"users": database}
 
-@app.get('/users/{user_id}', status_code=HTTPStatus.OK)
+@app.get('/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic)
 def get_user(user_id: int):
     user_with_id = None
     for user in database:
