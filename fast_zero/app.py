@@ -28,6 +28,20 @@ def create_user(user: UserSchema):
 def get_users():
     return {"users": database}
 
+@app.get('/users/{user_id}', status_code=HTTPStatus.OK)
+def get_user(user_id: int):
+    user_with_id = None
+    for user in database:
+        if user.id == user_id:
+            user_with_id = user
+    
+    if not user_with_id:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="User not found"
+        )
+    
+    return user_with_id
+
 @app.put('/users/{user_id}', response_model=UserPublic)
 def update_user(user_id: int, user: UserSchema):
 
