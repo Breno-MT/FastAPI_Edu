@@ -31,6 +31,20 @@ def test_get_users_from_database_success(client):
         ]
     }
 
+def test_get_user_by_id_success(client):
+    response = client.get('/users/1')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        "id": 1,
+        "username": "testdasilva",
+        "email": "testdasilva@gmail.com"
+    }
+
+def test_get_user_by_id_failed(client):
+    response = client.get('/users/2')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {"detail": "User not found"}
+
 def test_update_user_from_database_success(client):
     # Must pass an ID on URL
     response = client.put("/users/1", json={
@@ -76,3 +90,4 @@ def test_delete_user_success(client):
 def test_delete_user_failed(client):
     response = client.delete('/users/2')
     assert response.status_code == HTTPStatus.NOT_FOUND
+
