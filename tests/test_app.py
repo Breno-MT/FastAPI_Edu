@@ -65,3 +65,14 @@ def test_update_user_from_database_failed(client):
     })
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
+
+def test_delete_user_success(client):
+    response = client.delete('/users/1')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'User deleted successfully.'}
+    get_users = client.get('/users/')
+    assert len(get_users.json().get("users")) == 0
+
+def test_delete_user_failed(client):
+    response = client.delete('/users/2')
+    assert response.status_code == HTTPStatus.NOT_FOUND
