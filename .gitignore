@@ -162,4 +162,3 @@ cython_debug/
 #.idea/
 dev_database.db
 prod_database.db
-migrations/
