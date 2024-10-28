@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from fast_zero.schemas import UserPublic
+
 def test_root_must_return_ok_and_hello_world(client):
     response = client.get('/')
     assert response.status_code == HTTPStatus.OK
@@ -18,34 +20,33 @@ def test_create_new_user_and_check_the_info_success(client):
         "email": "testdasilva@gmail.com"
     }
 
-def test_get_users_from_database_success(client):
+def test_get_users_from_database_success(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
     response = client.get("/users/")
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        "users": [
-            {
-                "id": 1,
-                "username": "testdasilva",
-                "email": "testdasilva@gmail.com"
-            }
-        ]
+        "users": [user_schema]
     }
 
-def test_get_user_by_id_success(client):
-    response = client.get('/users/1')
+def test_get_no_users_from_database_success(client):
+    response = client.get("/users/")
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        "id": 1,
-        "username": "testdasilva",
-        "email": "testdasilva@gmail.com"
+        "users": []
     }
+
+def test_get_user_by_id_success(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
+    response = client.get('/users/1')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == user_schema
 
 def test_get_user_by_id_failed(client):
     response = client.get('/users/2')
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {"detail": "User not found"}
 
-def test_update_user_from_database_success(client):
+def test_update_user_from_database_success(client, user):
     # Must pass an ID on URL
     response = client.put("/users/1", json={
         "username": "atualizadotest",
@@ -80,7 +81,7 @@ def test_update_user_from_database_failed(client):
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
 
-def test_delete_user_success(client):
+def test_delete_user_success(client, user):
     response = client.delete('/users/1')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted successfully.'}
