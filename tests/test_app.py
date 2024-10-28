@@ -7,48 +7,43 @@ def test_root_must_return_ok_and_hello_world(client):
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'Olá mundo!'}
 
-def test_create_new_user_and_check_the_info_success(client):
-    response = client.post('/users/create_user', json={
+def test_create_new_user_and_check_the_info_success(client, token):
+    response = client.post('/users/create_user', headers=token, json={
         "username": "testdasilva",
         "email": "testdasilva@gmail.com",
         "password": "1230isoda"
     })
     assert response.status_code == HTTPStatus.CREATED
     assert response.json() == {
-        "id": response.json().get("id") >=1,
+        "id": 2,
         "username": "testdasilva",
         "email": "testdasilva@gmail.com"
     }
 
-def test_get_users_from_database_success(client, user):
+def test_get_users_from_database_success(client, user, token):
     user_schema = UserPublic.model_validate(user).model_dump()
-    response = client.get("/users/")
+    response = client.get("/users/", headers=token)
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         "users": [user_schema]
     }
 
-def test_get_no_users_from_database_success(client):
-    response = client.get("/users/")
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        "users": []
-    }
-
-def test_get_user_by_id_success(client, user):
+def test_get_user_by_id_success(client, user, token):
     user_schema = UserPublic.model_validate(user).model_dump()
-    response = client.get('/users/1')
+    response = client.get(f'/users/{user.id}', headers=token)
     assert response.status_code == HTTPStatus.OK
     assert response.json() == user_schema
 
-def test_get_user_by_id_failed(client):
-    response = client.get('/users/2')
+def test_get_user_by_id_failed(client, token):
+    response = client.get('/users/2', headers=token)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {"detail": "User not found"}
 
-def test_update_user_from_database_success(client, user):
+def test_update_user_from_database_success(client, user, token):
     # Must pass an ID on URL
-    response = client.put("/users/1", json={
+    response = client.put(f"/users/{user.id}", 
+    headers=token,
+    json={
         "username": "atualizadotest",
         "email": "atualizado@test.com",
         "password": "atualizadopasswd"
@@ -60,7 +55,18 @@ def test_update_user_from_database_success(client, user):
         "email": "atualizado@test.com",
     }
 
-    response_get_user = client.get("/users/")
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "atualizadotest",
+            "password": "atualizadopasswd"
+        }
+    )
+    response_get_user = client.get("/users/",
+        headers={
+            "Authorization": f"Bearer {response_token.json()["access_token"]}"
+            })
+
     assert response_get_user.json() == {
         "users": [
             {
@@ -71,24 +77,22 @@ def test_update_user_from_database_success(client, user):
         ]
     }
 
-def test_update_user_from_database_failed(client):
+def test_update_user_from_database_failed(client, token):
     # Must pass an ID on URL
-    response = client.put("/users/2", json={
+    response = client.put("/users/2", headers=token, json={
         "username": "atualizadotest",
         "email": "atualizado@test.com",
         "password": "atualizadopasswd"
     })
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Not enough permission'}
 
-def test_delete_user_success(client, user):
-    response = client.delete('/users/1')
+def test_delete_user_success(client, user, token):
+    response = client.delete('/users/1', headers=token)
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted successfully.'}
-    get_users = client.get('/users/')
-    assert len(get_users.json().get("users")) == 0
 
-def test_delete_user_failed(client):
-    response = client.delete('/users/2')
-    assert response.status_code == HTTPStatus.NOT_FOUND
+def test_delete_user_failed(client, token):
+    response = client.delete('/users/2', headers=token)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
