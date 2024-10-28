@@ -2,13 +2,32 @@ from http import HTTPStatus
 from sqlalchemy import select, func
 
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from .database import get_session
 from .models import User
+from .security import get_password_hash, verify_password
 from .schemas import Message, UserList, UserPublic, UserSchema
 
 app = FastAPI()
 
+
+@app.get('/token')
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session = Depends(get_session)
+):
+    user_db = session.scalar(
+        select(User).where(User.username == form_data.username)
+    )
+
+    if not user_db or verify_password(form_data.password, user_db.password):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Incorrect username or password"
+        )
+    
+    return user_db
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
@@ -28,7 +47,7 @@ def create_user(user: UserSchema, session=Depends(get_session)):
     db_user = User(
         username=user.username,
         email=user.email,
-        password=user.password,
+        password=get_password_hash(user.password),
     )
     session.add(db_user)
     session.commit()
@@ -70,7 +89,7 @@ def update_user(user_id: int, user: UserSchema, session = Depends(get_session)):
 
     user_db.username = user.username
     user_db.email = user.email
-    user_db.password = user.password
+    user_db.password = get_password_hash(user.password)
     user_db.updated_at = func.now()
 
     session.commit()
