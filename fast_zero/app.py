@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from fastapi import FastAPI, HTTPException, Depends
 
@@ -71,6 +71,7 @@ def update_user(user_id: int, user: UserSchema, session = Depends(get_session)):
     user_db.username = user.username
     user_db.email = user.email
     user_db.password = user.password
+    user_db.updated_at = func.now()
 
     session.commit()
     session.refresh(user_db)
