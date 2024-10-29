@@ -2,3 +2,14 @@
 run = 'fastapi dev fast_zero/app.py'
 test = 'pytest --cov=fast_zero -vv'
 post_test = 'coverage html'
+
+[tool.pyright]
+include = ["src"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs"
+]
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+
