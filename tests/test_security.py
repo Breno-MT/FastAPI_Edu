@@ -39,3 +39,27 @@ def test_jwt_invalid_token(client):
     )
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json().get("detail") == "Could not validate credentials"
+
+def test_validate_token_after_user_delete(client, user):
+    response = client.post("/token", data={
+        "username": user.username,
+        "password": user.clean_password
+    })
+    token = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert token["token_type"] == "Bearer"
+    assert "access_token" in token
+
+    second_response = client.delete(
+        "/users/1", headers={"Authorization": f"Bearer {token["access_token"]}"}
+    )
+
+    assert second_response.status_code == HTTPStatus.OK
+    assert second_response.json() == {'message': 'User deleted successfully.'}
+
+    third_response = client.get("/users/",
+                                 headers={"Authorization": f"Bearer {token["access_token"]}"})
+
+    assert third_response.status_code == HTTPStatus.UNAUTHORIZED
+    assert third_response.json().get("detail") == "Could not validate credentials"
