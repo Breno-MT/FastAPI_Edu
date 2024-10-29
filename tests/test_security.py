@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from jwt import decode, encode
 
-from fast_zero.security import create_access_token, SECRET_KEY, ALGORITHM
+from fast_zero.security import create_access_token, settings
 
 
 def test_create_jwt():
@@ -9,7 +9,7 @@ def test_create_jwt():
         "sub": "test"
     }
     result = create_access_token(data)
-    decoded_result = decode(result, SECRET_KEY, algorithms=[ALGORITHM])
+    decoded_result = decode(result, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     assert decoded_result["sub"] == data["sub"]
     assert decoded_result["exp"]
 
@@ -65,9 +65,9 @@ def test_validate_token_after_user_delete(client, user):
     assert third_response.json().get("detail") == "Could not validate credentials"
 
 def test_token_no_sub_username(client, token):
-    token = decode(token.get("Authorization")[7:], SECRET_KEY, algorithms=[ALGORITHM])
+    token = decode(token.get("Authorization")[7:], settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     token.pop("sub")
-    new_token = encode(token, SECRET_KEY, algorithm=ALGORITHM)
+    new_token = encode(token, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     response = client.get("/users/", headers={"Authorization": f"Bearer {new_token}"})
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json().get("detail") == "Could not validate credentials"
