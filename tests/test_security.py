@@ -14,7 +14,7 @@ def test_create_jwt():
     assert decoded_result["exp"]
 
 def test_get_token_success(client, user):
-    response = client.post("/token", data={
+    response = client.post("/auth/token", data={
         "username": user.username,
         "password": user.clean_password
     })
@@ -25,7 +25,7 @@ def test_get_token_success(client, user):
     assert "access_token" in token
 
 def test_get_token_failed(client, user):
-    response = client.post("/token", data={
+    response = client.post("/auth/token", data={
         "username": user.username,
         "password": user.email
     })
@@ -41,7 +41,7 @@ def test_jwt_invalid_token(client):
     assert response.json().get("detail") == "Could not validate credentials"
 
 def test_validate_token_after_user_delete(client, user):
-    response = client.post("/token", data={
+    response = client.post("/auth/token", data={
         "username": user.username,
         "password": user.clean_password
     })
@@ -64,7 +64,7 @@ def test_validate_token_after_user_delete(client, user):
     assert third_response.status_code == HTTPStatus.UNAUTHORIZED
     assert third_response.json().get("detail") == "Could not validate credentials"
 
-def test_token_no_sub_username(client, user, token):
+def test_token_no_sub_username(client, token):
     token = decode(token.get("Authorization")[7:], SECRET_KEY, algorithms=[ALGORITHM])
     token.pop("sub")
     new_token = encode(token, SECRET_KEY, algorithm=ALGORITHM)

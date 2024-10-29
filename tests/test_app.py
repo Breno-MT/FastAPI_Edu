@@ -98,7 +98,7 @@ def test_update_user_from_database_success(client, user, token):
     }
 
     response_token = client.post(
-        "/token",
+        "/auth/token",
         data={
             "username": "atualizadotest",
             "password": "atualizadopasswd"
