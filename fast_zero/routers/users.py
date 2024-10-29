@@ -80,7 +80,7 @@ def update_user(user_id: int,
 
     if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
+            status_code=HTTPStatus.FORBIDDEN,
             detail="Not enough permission"
         )
 
@@ -102,7 +102,7 @@ def delete_user(user_id: int,
     
     if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
+            status_code=HTTPStatus.FORBIDDEN,
             detail="Not enough permission"
         )
     
