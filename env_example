@@ -1,0 +1,4 @@
+DATABASE_URL="sqlite:///db_name"
+SECRET_KEY="your_secret_key"
+ALGORITHM="algorithm type"
+ACCESS_TOKEN_EXPIRE_MINUTES=60 or whatever
