@@ -122,7 +122,7 @@ def test_update_user_from_database_failed(client, token):
         "email": "atualizado@test.com",
         "password": "atualizadopasswd"
     })
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.json() == {'detail': 'Not enough permission'}
 
 def test_delete_user_success(client, user, token):
@@ -132,4 +132,4 @@ def test_delete_user_success(client, user, token):
 
 def test_delete_user_failed(client, token):
     response = client.delete('/users/2', headers=token)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.FORBIDDEN
