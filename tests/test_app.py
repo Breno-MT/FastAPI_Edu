@@ -20,6 +20,48 @@ def test_create_new_user_and_check_the_info_success(client, token):
         "email": "testdasilva@gmail.com"
     }
 
+def test_create_new_user_and_duplicate_him_username(client, token):
+    response = client.post('/users/create_user', headers=token, json={
+        "username": "testdasilva",
+        "email": "testdasilva@gmail.com",
+        "password": "1230isoda"
+    })
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json() == {
+        "id": 2,
+        "username": "testdasilva",
+        "email": "testdasilva@gmail.com"
+    }
+
+    second_response = client.post('/users/create_user', headers=token, json={
+        "username": "testdasilva",
+        "email": "testdasilvaaa@gmail.com",
+        "password": "1230isoda"
+    })
+    assert second_response.status_code == HTTPStatus.CONFLICT
+    assert second_response.json().get("detail") == "Username/Email already on Database"
+
+def test_create_new_user_and_duplicate_him_email(client, token):
+    response = client.post('/users/create_user', headers=token, json={
+        "username": "testdasilvaaaa",
+        "email": "testdasilva@gmail.com",
+        "password": "1230isoda"
+    })
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json() == {
+        "id": 2,
+        "username": "testdasilvaaaa",
+        "email": "testdasilva@gmail.com"
+    }
+
+    second_response = client.post('/users/create_user', headers=token, json={
+        "username": "testdasilva",
+        "email": "testdasilva@gmail.com",
+        "password": "1230isoda"
+    })
+    assert second_response.status_code == HTTPStatus.CONFLICT
+    assert second_response.json().get("detail") == "Username/Email already on Database"
+
 def test_get_users_from_database_success(client, user, token):
     user_schema = UserPublic.model_validate(user).model_dump()
     response = client.get("/users/", headers=token)
