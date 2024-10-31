@@ -1,3 +1,4 @@
+from freezegun import freeze_time
 from http import HTTPStatus
 from jwt import decode, encode
 
@@ -71,3 +72,39 @@ def test_token_no_sub_username(client, token):
     response = client.get("/users/", headers={"Authorization": f"Bearer {new_token}"})
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json().get("detail") == "Could not validate credentials"
+
+def test_token_expired(client, user):
+    with freeze_time("2023-07-14 12:00:00"):
+        response = client.post("/auth/token",
+            data={
+                "username": user.username,
+                "password": user.clean_password
+            }
+        )
+        assert response.status_code == HTTPStatus.OK
+        token = response.json().get("access_token")
+
+    with freeze_time("2023-07-14 13:01:00"):
+        second_response = client.get("/users/1",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert second_response.status_code == HTTPStatus.UNAUTHORIZED
+        assert second_response.json().get("detail") == "Could not validate credentials"
+
+def test_token_wrong_username(client, user):
+    response = client.post("/auth/token", data={
+        "username": user.email,
+        "password": user.clean_password
+    })
+
+    assert response.json().get("detail") == "Incorrect username or password"
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+def test_token_wrong_password(client, user):
+    response = client.post("/auth/token", data={
+        "username": user.username,
+        "password": user.password
+    })
+
+    assert response.json().get("detail") == "Incorrect username or password"
+    assert response.status_code == HTTPStatus.BAD_REQUEST
