@@ -3,7 +3,7 @@ from pwdlib import PasswordHash
 from zoneinfo import ZoneInfo
 from http import HTTPStatus
 from jwt import decode, encode
-from jwt.exceptions import PyJWTError
+from jwt.exceptions import PyJWTError, ExpiredSignatureError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
@@ -51,6 +51,9 @@ def get_current_user(
         username = payload.get("sub")
         if not username:
             raise credentials_exception
+
+    except ExpiredSignatureError:
+        raise credentials_exception
 
     except PyJWTError:
         raise credentials_exception
