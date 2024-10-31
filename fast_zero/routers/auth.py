@@ -29,7 +29,13 @@ def login_for_access_token(
         select(User).where(User.username == form_data.username)
     )
 
-    if not user_db or not verify_password(form_data.password, user_db.password):
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Incorrect username or password"
+        )
+
+    if not verify_password(form_data.password, user_db.password):
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Incorrect username or password"
